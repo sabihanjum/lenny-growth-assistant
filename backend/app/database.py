@@ -19,6 +19,11 @@ def get_engine():
     global _engine, _session_factory
     if _engine is None:
         db_url = settings.DATABASE_URL
+        # Normalize Render/Heroku postgres:// URLs for asyncpg
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif db_url.startswith("postgresql://") and "+asyncpg" not in db_url:
+            db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
         try:
             _engine = create_async_engine(
                 db_url,

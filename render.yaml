@@ -1,0 +1,58 @@
+# Render Infrastructure-as-Code Blueprint
+# Automatically deploys PostgreSQL, FastAPI Backend, and Next.js Frontend
+version: "1"
+
+databases:
+  - name: lenny-postgres
+    databaseName: lenny_assistant
+    user: lenny_user
+    plan: free
+    region: oregon
+    postgresMajorVersion: "16"
+
+services:
+  # ----------------------------------------------------------------------------
+  # Backend API Web Service (FastAPI)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: lenny-growth-backend
+    env: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python scripts/ingest.py
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lenny-postgres
+          property: connectionString
+      - key: DEFAULT_LLM_PROVIDER
+        value: claude
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+  # ----------------------------------------------------------------------------
+  # Frontend Web Service (Next.js 14)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: lenny-growth-frontend
+    env: node
+    region: oregon
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.14.0
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: lenny-growth-backend
+          property: host
