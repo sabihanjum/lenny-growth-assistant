@@ -136,3 +136,70 @@ class OpenAIProvider(BaseLLMProvider):
         except Exception as e:
             logger.error(f"OpenAI API exception: {e}")
             yield f"Error calling OpenAI API: {str(e)}"
+
+
+class GeminiProvider(BaseLLMProvider):
+    def __init__(self, api_key: str = None, model: str = None):
+        self.api_key = api_key or settings.GEMINI_API_KEY
+        self.model = model or "gemini-1.5-flash"
+
+    async def generate_response(
+        self,
+        messages: List[Dict[str, str]],
+        system_prompt: str,
+        temperature: float = 0.3
+    ) -> AsyncGenerator[str, None]:
+        if not self.api_key:
+            yield "Error: GEMINI_API_KEY is not configured. Please get a free API key at https://aistudio.google.com/ and set it in your environment."
+            return
+
+        contents = []
+        for m in messages:
+            role = "user" if m.get("role") in ["user", "system"] else "model"
+            contents.append({
+                "role": role,
+                "parts": [{"text": m.get("content", "")}]
+            })
+
+        payload = {
+            "contents": contents,
+            "systemInstruction": {
+                "parts": [{"text": system_prompt}]
+            },
+            "generationConfig": {
+                "temperature": temperature,
+            }
+        }
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:streamGenerateContent?key={self.api_key}&alt=sse"
+        logger.info(f"Connecting to Google Gemini API using model '{self.model}'")
+
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                async with client.stream("POST", url, json=payload) as response:
+                    if response.status_code != 200:
+                        err = await response.aread()
+                        logger.error(f"Gemini error {response.status_code}: {err.decode('utf-8')}")
+                        yield f"Error from Google Gemini ({response.status_code}): {err.decode('utf-8')}"
+                        return
+
+                    async for line in response.aiter_lines():
+                        if line.startswith("data: "):
+                            raw_data = line[6:].strip()
+                            if not raw_data:
+                                continue
+                            try:
+                                chunk = json.loads(raw_data)
+                                candidates = chunk.get("candidates", [])
+                                if candidates:
+                                    content = candidates[0].get("content", {})
+                                    parts = content.get("parts", [])
+                                    for p in parts:
+                                        t = p.get("text", "")
+                                        if t:
+                                            yield t
+                            except json.JSONDecodeError:
+                                continue
+        except Exception as e:
+            logger.error(f"Gemini API exception: {e}")
+            yield f"Error calling Google Gemini API: {str(e)}"

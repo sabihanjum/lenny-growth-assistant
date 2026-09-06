@@ -73,6 +73,21 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             <Sparkles className="w-3.5 h-3.5 text-blue-500" />
             <span>OpenAI (GPT-4o)</span>
           </button>
+
+          <button
+            onClick={() => {
+              setProvider("gemini");
+              setModel("gemini-1.5-flash");
+            }}
+            className={`flex items-center space-x-1.5 text-xs font-medium px-2.5 py-1 rounded-md transition ${
+              provider === "gemini"
+                ? "bg-white text-indigo-800 shadow-sm border border-gray-200"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Gemini (Free)</span>
+          </button>
         </div>
 
         {/* Ollama specific model select if provider is Ollama */}

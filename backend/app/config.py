@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     # Cloud LLM API Keys (optional, can be passed via env or request)
     ANTHROPIC_API_KEY: str = Field(default="", description="Anthropic Claude API Key")
     OPENAI_API_KEY: str = Field(default="", description="OpenAI API Key")
+    GEMINI_API_KEY: str = Field(default="", description="Google Gemini API Key")
 
     # RAG Settings
     EMBEDDING_MODEL: str = "BAAI/bge-small-en-v1.5"
