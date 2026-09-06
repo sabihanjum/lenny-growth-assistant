@@ -95,11 +95,11 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            className="text-xs bg-white border border-gray-200 text-gray-700 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="text-xs bg-white border border-gray-200 text-gray-700 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium"
           >
             {availableOllamaModels.map((m) => (
               <option key={m} value={m}>
-                {m}
+                {m === "llama3.2:1b" ? `${m} (Fast ⚡)` : m === "llama3.1:8b" ? `${m} (Recommended)` : m}
               </option>
             ))}
           </select>

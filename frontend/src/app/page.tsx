@@ -165,6 +165,18 @@ export default function Home() {
           setIsArtifactOpen(true);
         }
       },
+      onError: (err) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: "err-" + Date.now(),
+            session_id: currentSessionId || "",
+            role: "assistant",
+            content: `⚠️ **Error Generating Response:** ${err.message || err}\n\n*Please ensure the backend is running at http://localhost:8000 and the selected provider (${provider}) is accessible.*`,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+      },
     });
   };
 
