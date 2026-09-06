@@ -2,7 +2,16 @@
  * API client utilities for communicating with The Lenny Growth Assistant backend.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+export const getApiBase = (): string => {
+  const url = process.env.NEXT_PUBLIC_API_URL || "";
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url.replace(/\/$/, "");
+  }
+  return `https://${url.replace(/\/$/, "")}`;
+};
+
+const API_BASE = getApiBase();
 
 export interface Session {
   id: string;

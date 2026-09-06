@@ -65,12 +65,19 @@ export default function Home() {
           status: health.status,
           chunks: health.database.indexed_chunks,
         });
-        if (health.ollama.available_models && health.ollama.available_models.length > 0) {
+        if (health.ollama && health.ollama.status === "connected" && health.ollama.available_models?.length > 0) {
           setAvailableOllamaModels(health.ollama.available_models);
           setModel(health.ollama.default_model || health.ollama.available_models[0]);
+        } else {
+          // In cloud environments (Render) where Ollama is not local, default to Gemini (Free)
+          setProvider("gemini");
+          setModel("gemini-1.5-flash");
         }
       } catch (e) {
         console.warn("Could not load health diagnostics:", e);
+        // Default to cloud provider if health check indicates no local Ollama
+        setProvider("gemini");
+        setModel("gemini-1.5-flash");
       }
 
       try {

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Citation, Artifact } from "@/lib/api";
+import { Citation, Artifact, getApiBase } from "@/lib/api";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = getApiBase();
 
 interface SendMessageOptions {
   sessionId?: string;
