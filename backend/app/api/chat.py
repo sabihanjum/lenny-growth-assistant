@@ -142,7 +142,9 @@ async def stream_chat(
                 yield f"event: token\ndata: {json.dumps({'token': token})}\n\n"
         except Exception as gen_err:
             logger.error(f"Error during token streaming: {gen_err}")
-            yield f"event: token\ndata: {json.dumps({'token': f'\\n\\n[Streaming Error: {str(gen_err)}]' })}\n\n"
+            err_msg = f"\n\n[Streaming Error: {str(gen_err)}]"
+            payload_str = json.dumps({"token": err_msg})
+            yield f"event: token\ndata: {payload_str}\n\n"
 
         full_response = "".join(accumulated_tokens)
 
